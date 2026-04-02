@@ -3,13 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: RemindMe Pro API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: users
+    description: User management
+  - name: reminders
+    description: Reminders and notes
+  - name: alarms
+    description: Alarms
+  - name: groups
+    description: Group management
+  - name: group-messages
+    description: Group messages
+  - name: notifications
+    description: Push notification token management
 paths:
   /healthz:
     get:
@@ -24,6 +36,470 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /users/register:
+    post:
+      operationId: registerUser
+      tags: [users]
+      summary: Register or update user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterUserBody"
+      responses:
+        "200":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{uid}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user by UID
+      parameters:
+        - name: uid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+
+  /reminders:
+    get:
+      operationId: listReminders
+      tags: [reminders]
+      summary: List reminders for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of reminders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reminder"
+    post:
+      operationId: createReminder
+      tags: [reminders]
+      summary: Create a reminder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReminderBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+
+  /reminders/{id}:
+    get:
+      operationId: getReminder
+      tags: [reminders]
+      summary: Get reminder by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reminder
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateReminder
+      tags: [reminders]
+      summary: Update a reminder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReminderBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Reminder"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteReminder
+      tags: [reminders]
+      summary: Delete a reminder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /alarms:
+    get:
+      operationId: listAlarms
+      tags: [alarms]
+      summary: List alarms for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of alarms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alarm"
+    post:
+      operationId: createAlarm
+      tags: [alarms]
+      summary: Create an alarm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAlarmBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alarm"
+
+  /alarms/{id}:
+    patch:
+      operationId: updateAlarm
+      tags: [alarms]
+      summary: Update an alarm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAlarmBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alarm"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteAlarm
+      tags: [alarms]
+      summary: Delete an alarm
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /groups:
+    get:
+      operationId: listGroups
+      tags: [groups]
+      summary: List groups for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Group"
+    post:
+      operationId: createGroup
+      tags: [groups]
+      summary: Create a group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroupBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+
+  /groups/{id}:
+    get:
+      operationId: getGroup
+      tags: [groups]
+      summary: Get group by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Group
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateGroup
+      tags: [groups]
+      summary: Update a group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGroupBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+    delete:
+      operationId: deleteGroup
+      tags: [groups]
+      summary: Delete a group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /groups/{id}/join:
+    post:
+      operationId: joinGroup
+      tags: [groups]
+      summary: Join a group by invite code
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinGroupBody"
+      responses:
+        "200":
+          description: Joined
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+        "404":
+          description: Not found
+
+  /groups/{id}/members:
+    get:
+      operationId: listGroupMembers
+      tags: [groups]
+      summary: List members of a group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Member list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroupMember"
+
+  /groups/{id}/messages:
+    get:
+      operationId: listGroupMessages
+      tags: [group-messages]
+      summary: List messages in a group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Message list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroupMessage"
+    post:
+      operationId: sendGroupMessage
+      tags: [group-messages]
+      summary: Send a message or reminder to group
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendGroupMessageBody"
+      responses:
+        "201":
+          description: Sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupMessage"
+
+  /notifications/token:
+    post:
+      operationId: registerFcmToken
+      tags: [notifications]
+      summary: Register FCM push notification token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterTokenBody"
+      responses:
+        "200":
+          description: Token registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+
+  /notifications/send:
+    post:
+      operationId: sendNotification
+      tags: [notifications]
+      summary: Send notification to a group
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendNotificationBody"
+      responses:
+        "200":
+          description: Notification sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationResult"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [reminders]
+      summary: Get dashboard summary for a user
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +510,390 @@ components:
       required:
         - status
 
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        uid:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        photoUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - uid
+        - displayName
+        - email
+        - createdAt
+
+    RegisterUserBody:
+      type: object
+      properties:
+        uid:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+        photoUrl:
+          type: ["string", "null"]
+      required:
+        - uid
+        - displayName
+        - email
+
+    Reminder:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        type:
+          type: string
+          enum: [reminder, note, alarm]
+        scheduledAt:
+          type: ["string", "null"]
+        isCompleted:
+          type: boolean
+        priority:
+          type: string
+          enum: [low, medium, high]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - userId
+        - title
+        - content
+        - type
+        - isCompleted
+        - priority
+        - createdAt
+        - updatedAt
+
+    CreateReminderBody:
+      type: object
+      properties:
+        userId:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        type:
+          type: string
+          enum: [reminder, note, alarm]
+        scheduledAt:
+          type: ["string", "null"]
+        priority:
+          type: string
+          enum: [low, medium, high]
+      required:
+        - userId
+        - title
+        - content
+        - type
+
+    UpdateReminderBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        scheduledAt:
+          type: ["string", "null"]
+        isCompleted:
+          type: boolean
+        priority:
+          type: string
+          enum: [low, medium, high]
+
+    Alarm:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        title:
+          type: string
+        scheduledAt:
+          type: string
+        repeatType:
+          type: string
+          enum: [none, daily, weekly, monthly]
+        isActive:
+          type: boolean
+        soundEnabled:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - userId
+        - title
+        - scheduledAt
+        - repeatType
+        - isActive
+        - soundEnabled
+        - createdAt
+
+    CreateAlarmBody:
+      type: object
+      properties:
+        userId:
+          type: string
+        title:
+          type: string
+        scheduledAt:
+          type: string
+        repeatType:
+          type: string
+          enum: [none, daily, weekly, monthly]
+        soundEnabled:
+          type: boolean
+      required:
+        - userId
+        - title
+        - scheduledAt
+        - repeatType
+
+    UpdateAlarmBody:
+      type: object
+      properties:
+        title:
+          type: string
+        scheduledAt:
+          type: string
+        repeatType:
+          type: string
+          enum: [none, daily, weekly, monthly]
+        isActive:
+          type: boolean
+        soundEnabled:
+          type: boolean
+
+    Group:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        inviteCode:
+          type: string
+        ownerId:
+          type: string
+        memberCount:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - description
+        - inviteCode
+        - ownerId
+        - memberCount
+        - createdAt
+
+    CreateGroupBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        ownerId:
+          type: string
+      required:
+        - name
+        - ownerId
+
+    UpdateGroupBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+
+    JoinGroupBody:
+      type: object
+      properties:
+        userId:
+          type: string
+        inviteCode:
+          type: string
+      required:
+        - userId
+        - inviteCode
+
+    GroupMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        groupId:
+          type: integer
+        userId:
+          type: string
+        displayName:
+          type: string
+        role:
+          type: string
+          enum: [owner, member]
+        joinedAt:
+          type: string
+      required:
+        - id
+        - groupId
+        - userId
+        - displayName
+        - role
+        - joinedAt
+
+    GroupMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        groupId:
+          type: integer
+        senderId:
+          type: string
+        senderName:
+          type: string
+        content:
+          type: string
+        messageType:
+          type: string
+          enum: [message, reminder, alarm]
+        scheduledAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - groupId
+        - senderId
+        - senderName
+        - content
+        - messageType
+        - createdAt
+
+    SendGroupMessageBody:
+      type: object
+      properties:
+        senderId:
+          type: string
+        senderName:
+          type: string
+        content:
+          type: string
+        messageType:
+          type: string
+          enum: [message, reminder, alarm]
+        scheduledAt:
+          type: ["string", "null"]
+      required:
+        - senderId
+        - senderName
+        - content
+        - messageType
+
+    RegisterTokenBody:
+      type: object
+      properties:
+        userId:
+          type: string
+        token:
+          type: string
+        platform:
+          type: string
+          enum: [web, android, ios, windows]
+      required:
+        - userId
+        - token
+        - platform
+
+    TokenResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+        - message
+
+    SendNotificationBody:
+      type: object
+      properties:
+        groupId:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        senderId:
+          type: string
+      required:
+        - groupId
+        - title
+        - body
+        - senderId
+
+    NotificationResult:
+      type: object
+      properties:
+        sent:
+          type: integer
+        failed:
+          type: integer
+      required:
+        - sent
+        - failed
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalReminders:
+          type: integer
+        pendingReminders:
+          type: integer
+        completedReminders:
+          type: integer
+        totalAlarms:
+          type: integer
+        activeAlarms:
+          type: integer
+        totalGroups:
+          type: integer
+        upcomingCount:
+          type: integer
+      required:
+        - totalReminders
+        - pendingReminders
+        - completedReminders
+        - totalAlarms
+        - activeAlarms
+        - totalGroups
+        - upcomingCount
