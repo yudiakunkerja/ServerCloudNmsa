@@ -1,1 +1,2 @@
-{\n  "version": 2,\n  "builds": [\n    {\n      "src": "packages/api-server/package.json",\n      "use": "@vercel/node"\n    }\n  ],\n  "routes": [\n    {\n      "src": "/api/(.*)",\n      "dest": "/packages/api-server/src/index.js"\n    }\n  ]\n}
+{\n  "version": 2,\n  "build": {\n    "env": {\n      "NODE_VERSION": "20.x"\n    },\n    "commands": [\n      "npm install",
+      "npm run build"\n    ]\n  },\n  "routes": [\n    {\n      "src": "/(.*)",\n      "dest": "index.js"\n    }\n  ]\n}
