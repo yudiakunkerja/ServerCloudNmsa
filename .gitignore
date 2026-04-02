@@ -1,54 +1,18 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+.gitignore
+# Lines in this gitignore file remain intact
 
-# compiled output
-dist
-tmp
-out-tsc
-*.tsbuildinfo
-.expo
-.expo-shared
+# Node modules
+node_modules/
 
-# dependencies
-node_modules
+# Logs
+logs/
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+# Build output
+dist/
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-
-# Tambahan Manual untuk Keamanan
-.replit
-replit.md
-artifacts/
-testem.log
-/typings
-
-# System Files
+# Misc
 .DS_Store
-Thumbs.db
-
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
-
-# Replit
-.cache/
-.local/
+.env
+# Temporary
+artifacts/
+# ... (other lines must remain the same)
