@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation, useParams } from "wouter";
+import { useParams } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { 
   useGetGroup, 
@@ -14,11 +14,9 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, ArrowLeft, Users, Bell } from "lucide-react";
+import { Send, ArrowLeft, Users } from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
-import { db } from "@/lib/firebase";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 
 export default function GroupDetail() {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +30,13 @@ export default function GroupDetail() {
   
   // Local state for messages to handle real-time updates without constant refetching
   const [messages, setMessages] = useState<any[]>([]);
-  const { data: initialMessages } = useListGroupMessages(groupId, { query: { enabled: !!groupId, queryKey: getListGroupMessagesQueryKey(groupId) } });
+  const { data: initialMessages } = useListGroupMessages(groupId, {
+    query: {
+      enabled: !!groupId,
+      queryKey: getListGroupMessagesQueryKey(groupId),
+      refetchInterval: 3000
+    }
+  });
 
   const sendMessage = useSendGroupMessage();
   const sendNotification = useSendNotification();
@@ -40,25 +44,13 @@ export default function GroupDetail() {
   const [messageContent, setMessageContent] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Sync initial messages
+  // Sync messages from query into local state and auto-scroll
   useEffect(() => {
     if (initialMessages) {
       setMessages(initialMessages);
       scrollToBottom();
     }
   }, [initialMessages]);
-
-  // Real-time listener using Firebase Firestore
-  useEffect(() => {
-    if (!groupId || !db) return;
-    const q = query(collection(db, `group_messages_${groupId}`), orderBy("createdAt", "asc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      // In a real app, we'd map firestore docs. But here we can just invalidate the react-query cache
-      // when a firestore update happens to fetch the real Postgres data.
-      queryClient.invalidateQueries({ queryKey: getListGroupMessagesQueryKey(groupId) });
-    });
-    return () => unsubscribe();
-  }, [groupId, queryClient]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -98,6 +98,44 @@ router.post("/groups", async (req, res): Promise<void> => {
   res.status(201).json(result);
 });
 
+router.post("/groups/join-by-code", async (req, res): Promise<void> => {
+  const { userId, inviteCode } = req.body;
+  if (!userId || !inviteCode) {
+    res.status(400).json({ error: "userId and inviteCode are required" });
+    return;
+  }
+
+  const [group] = await db
+    .select()
+    .from(groupsTable)
+    .where(eq(groupsTable.inviteCode, String(inviteCode).toUpperCase()));
+
+  if (!group) {
+    res.status(404).json({ error: "Invalid invite code — no group found" });
+    return;
+  }
+
+  const existing = await db
+    .select()
+    .from(groupMembersTable)
+    .where(and(eq(groupMembersTable.groupId, group.id), eq(groupMembersTable.userId, userId)));
+
+  if (existing.length === 0) {
+    const user = await db.select().from(usersTable).where(eq(usersTable.uid, userId));
+    const displayName = user[0]?.displayName ?? "Member";
+
+    await db.insert(groupMembersTable).values({
+      groupId: group.id,
+      userId,
+      displayName,
+      role: "member",
+    });
+  }
+
+  const result = await getGroupWithCount(group.id);
+  res.json(result);
+});
+
 router.get("/groups/:id", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const params = GetGroupParams.safeParse({ id: parseInt(rawId, 10) });

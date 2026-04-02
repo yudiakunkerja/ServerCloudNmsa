@@ -3,14 +3,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { 
   useListGroups, 
   getListGroupsQueryKey,
-  useCreateGroup,
-  useJoinGroup
+  useCreateGroup
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Users, ArrowRight, Copy } from "lucide-react";
+import { Plus, Users, ArrowRight, Copy, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,7 +26,7 @@ export default function Groups() {
   );
 
   const createGroup = useCreateGroup();
-  const joinGroup = useJoinGroup();
+  const [isJoiningLoading, setIsJoiningLoading] = useState(false);
 
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -53,27 +52,28 @@ export default function Groups() {
     });
   };
 
-  const handleJoin = () => {
-    if (!inviteCode.trim()) return;
-    joinGroup.mutate({
-      id: 0, // id is not strictly used in URL if it's POST /api/groups/join body, wait let's check generated API
-      // Actually joinGroup is POST /api/groups/:id/join ? wait let me check api
-      // The openapi says POST /api/groups/join -> body { userId, inviteCode }
-      data: {
-        userId,
-        inviteCode
+  const handleJoin = async () => {
+    if (!inviteCode.trim() || isJoiningLoading) return;
+    setIsJoiningLoading(true);
+    try {
+      const res = await fetch("/api/groups/join-by-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, inviteCode: inviteCode.trim() })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Invalid invite code");
       }
-    }, {
-      onSuccess: () => {
-        setIsJoining(false);
-        setInviteCode("");
-        queryClient.invalidateQueries({ queryKey: getListGroupsQueryKey({ userId }) });
-        toast({ title: "Joined group successfully" });
-      },
-      onError: () => {
-        toast({ title: "Invalid invite code", variant: "destructive" });
-      }
-    });
+      setIsJoining(false);
+      setInviteCode("");
+      queryClient.invalidateQueries({ queryKey: getListGroupsQueryKey({ userId }) });
+      toast({ title: "Joined group successfully!" });
+    } catch (e: any) {
+      toast({ title: e.message || "Invalid invite code", variant: "destructive" });
+    } finally {
+      setIsJoiningLoading(false);
+    }
   };
 
   const copyInvite = (code: string) => {
@@ -117,7 +117,10 @@ export default function Groups() {
                 <Input placeholder="Paste Invite Code" value={inviteCode} onChange={e => setInviteCode(e.target.value)} />
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setIsJoining(false)}>Cancel</Button>
-                  <Button onClick={handleJoin} disabled={!inviteCode.trim() || joinGroup.isPending}>Join Group</Button>
+                  <Button onClick={handleJoin} disabled={!inviteCode.trim() || isJoiningLoading}>
+                    {isJoiningLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Join Group
+                  </Button>
                 </div>
               </CardContent>
             </Card>

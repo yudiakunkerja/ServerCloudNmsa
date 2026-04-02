@@ -17,8 +17,9 @@ pnpm workspace monorepo using TypeScript. A premium collaborative reminder, note
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
 - **Push notifications**: Firebase Cloud Messaging (FCM)
-- **Real-time**: Firestore onSnapshot
+- **Real-time**: React Query `refetchInterval` polling (3s) for group messages
 - **PWA**: Web App Manifest + Service Worker (firebase-messaging-sw.js)
+- **Standalone JS**: `public/script.js` – Firebase helpers, alarm scheduler, notification utils
 
 ## Firebase Config
 
@@ -59,5 +60,16 @@ pnpm workspace monorepo using TypeScript. A premium collaborative reminder, note
 
 - `artifacts/remindme-pro` — React Vite PWA frontend (previewPath: /)
 - `artifacts/api-server` — Express 5 REST API backend (previewPath: /api)
+
+## GitHub Sync
+
+The GitHub Replit integration was dismissed by the user. To enable GitHub push, store a **Personal Access Token** (PAT) as the secret `GITHUB_TOKEN`, then use git commands:
+
+```bash
+git remote add origin https://<PAT>@github.com/<user>/<repo>.git
+git push -u origin main
+```
+
+NOTE TO AGENT: Ask user for PAT → store as `GITHUB_TOKEN` secret → then push.
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
