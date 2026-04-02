@@ -1,0 +1,1 @@
+{\n  "version": 2,\n  "builds": [\n    {\n      "src": "packages/api-server/package.json",\n      "use": "@vercel/node"\n    }\n  ],\n  "routes": [\n    {\n      "src": "/api/(.*)",\n      "dest": "/packages/api-server/src/index.js"\n    }\n  ]\n}
